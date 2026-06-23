@@ -7,9 +7,11 @@ chmod 700 /data
 # OpenClaw >= 2026.6.9 HARD-BLOCKS plugins whose files are not owned by root (uid 0)
 # ("suspicious ownership"). The `chown -R openclaw:openclaw /data` above makes the on-volume
 # plugin dirs uid 1001, which 6.9 then refuses to load (gate + slack go down). Re-own the
-# plugin dirs to root so 6.9 loads them. Guarded for existence; runs every boot (idempotent).
+# plugin dirs to root AND keep them runtime-readable (go+rX → 0755 dirs / 0644 files) so the
+# gosu-as-openclaw (uid 1001) runtime can still scandir them; root-owned-but-0700 = EACCES →
+# 6.9 strips the plugin as 'not found'. Guarded for existence; runs every boot (idempotent).
 for d in /data/.openclaw/extensions/* /data/.openclaw/npm/projects/openclaw-slack-*; do
-  [ -e "$d" ] && chown -R root:root "$d" || true
+  [ -e "$d" ] && chown -R root:root "$d" && chmod -R u+rwX,go+rX "$d" || true
 done
 
 if [ ! -d /data/.linuxbrew ]; then
@@ -20,4 +22,5 @@ rm -rf /home/linuxbrew/.linuxbrew
 ln -sfn /data/.linuxbrew /home/linuxbrew/.linuxbrew
 
 exec gosu openclaw node src/server.js
+
 
