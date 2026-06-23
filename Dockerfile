@@ -14,7 +14,7 @@ RUN apt-get update \
     unzip \
   && rm -rf /var/lib/apt/lists/*
 
-RUN npm install -g openclaw@2026.6.8
+RUN npm install -g openclaw@2026.6.9
 RUN npm install -g clawhub@latest
 
 WORKDIR /app
@@ -47,3 +47,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
 
 USER root
 ENTRYPOINT ["tini", "--", "./entrypoint.sh"]
+
